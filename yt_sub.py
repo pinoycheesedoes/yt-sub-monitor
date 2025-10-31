@@ -12,7 +12,7 @@ import threading
 # 🔧 CONFIGURATION
 # ======================================================
 VIDEO_URL = "https://youtu.be/FSDw3jX2tvE"  # YouTube video to monitor
-CHECK_INTERVAL = 60 * 60  # Check every 1 hour (in seconds)
+CHECK_INTERVAL = 60  # Check every 1 hour (in seconds)
 LOG_FILE = "subtitle_update_log.txt"
 
 # Telegram setup (from Render environment variables)
