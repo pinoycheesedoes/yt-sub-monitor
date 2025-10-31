@@ -1,89 +1,37 @@
-import subprocess
-import json
 import time
-import requests
-from datetime import datetime
+import logging
+from youtube_transcript_api import YouTubeTranscriptApi, TranscriptsDisabled, NoTranscriptFound, NoTranscriptAvailable
 
-# === CONFIGURATION ===
-VIDEO_URL = "https://youtu.be/FSDw3jX2tvE"  # Replace this with your target video
-CHECK_INTERVAL = 1800  # 30 minutes
+# === Setup logging ===
+logging.basicConfig(level=logging.INFO, format="[%(asctime)s] %(message)s")
 
-# === TELEGRAM SETUP ===
-TELEGRAM_BOT_TOKEN = "YOUR_TELEGRAM_BOT_TOKEN"
-TELEGRAM_CHAT_ID = "YOUR_TELEGRAM_CHAT_ID"
+# === Replace this with your video ID ===
+VIDEO_ID = "FSDw3jX2tvE"  # Example only
 
-
-def send_telegram(message):
-    """Send Telegram message"""
+def check_english_subs(video_id):
+    """Check if English subtitles exist."""
     try:
-        url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
-        payload = {"chat_id": TELEGRAM_CHAT_ID, "text": message}
-        requests.post(url, data=payload, timeout=10)
+        transcripts = YouTubeTranscriptApi.list_transcripts(video_id)
+        for t in transcripts:
+            if 'en' in t.language_code:
+                logging.info("✅ English subtitles are available!")
+                return True
+        logging.info("❌ No English subtitles yet.")
+        return False
+
+    except TranscriptsDisabled:
+        logging.info("⚠️ Subtitles are disabled for this video.")
+    except NoTranscriptFound:
+        logging.info("❌ No English subtitles found.")
+    except NoTranscriptAvailable:
+        logging.info("❌ Subtitles are not available at all.")
     except Exception as e:
-        print(f"[!] Telegram error: {e}")
-
-
-def log_event(message):
-    """Print and save log with timestamp"""
-    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    print(f"[{timestamp}] {message}")
-
-
-def check_subtitles():
-    """Check only subtitle metadata (no download)"""
-    try:
-        # Get metadata in JSON form (no actual download)
-        result = subprocess.run(
-            ["yt-dlp", "-J", "--skip-download", VIDEO_URL],
-            capture_output=True,
-            text=True,
-            timeout=60
-        )
-
-        # Parse JSON
-        info = json.loads(result.stdout)
-        subs = info.get("subtitles", {})
-
-        # Check for English subs
-        if "en" in subs:
-            return True
-        else:
-            return False
-
-    except Exception as e:
-        log_event(f"⚠️ Error checking subtitles: {e}")
-        return None
-
-
-def monitor():
-    """Main loop: check periodically"""
-    english_sub_available = False
-    log_event("🎬 Starting English subtitle monitor...")
-
-    while True:
-        result = check_subtitles()
-
-        if result is True:
-            if not english_sub_available:
-                english_sub_available = True
-                msg = "✅ English subtitles are now available!"
-                log_event(msg)
-                send_telegram(msg)
-            else:
-                log_event("✅ English subtitles still available.")
-        elif result is False:
-            if english_sub_available:
-                english_sub_available = False
-                msg = "⚠️ English subtitles were removed!"
-                log_event(msg)
-                send_telegram(msg)
-            else:
-                log_event("❌ No English subtitles yet.")
-        else:
-            log_event("⚠️ Failed to check subtitles (connection or rate limit?)")
-
-        time.sleep(CHECK_INTERVAL)
+        logging.warning(f"⚠️ Error checking subtitles: {e}")
+    return False
 
 
 if __name__ == "__main__":
-    monitor()
+    logging.info("🎬 Starting English subtitle monitor...")
+    while True:
+        check_english_subs(VIDEO_ID)
+        time.sleep(300)  # check every 5 minutes
