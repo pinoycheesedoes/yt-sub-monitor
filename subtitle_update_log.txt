@@ -1,0 +1,36 @@
+[2025-10-31 22:26:09] Starting subtitle monitor...
+[2025-10-31 22:26:09] Initial check failed: Unexpected error: [WinError 2] The system cannot find the file specified
+[2025-10-31 22:26:20] Starting subtitle monitor...
+[2025-10-31 22:26:20] Initial check failed: Unexpected error: [WinError 2] The system cannot find the file specified
+[2025-10-31 22:27:44] Starting subtitle monitor...
+[2025-10-31 22:27:55] Initial check failed: No subtitles found.
+[2025-10-31 22:28:53] Starting subtitle monitor...
+[2025-10-31 22:28:59] Initial subtitle hash recorded.
+[2025-10-31 22:29:31] Starting subtitle monitor...
+[2025-10-31 22:29:42] Initial check failed: No subtitles found.
+[2025-10-31 22:30:47] Starting subtitle monitor...
+[2025-10-31 22:30:58] Check failed: No subtitles found.
+[2025-10-31 22:40:51] Starting subtitle monitor...
+[2025-10-31 22:41:01] Check failed: No subtitles found.
+[2025-10-31 22:45:35] Starting subtitle monitor...
+[2025-10-31 22:45:46] Check failed: No subtitles found.
+[2025-10-31 22:45:58] Starting subtitle monitor...
+[2025-10-31 22:46:08] Check failed: No subtitles found.
+[2025-10-31 22:47:19] Check failed: No subtitles found.
+[2025-10-31 22:48:29] Check failed: No subtitles found.
+[2025-10-31 22:49:41] Check failed: No subtitles found.
+[2025-10-31 22:50:53] Check failed: No subtitles found.
+[2025-10-31 22:52:06] Check failed: No subtitles found.
+[2025-10-31 22:53:18] Check failed: No subtitles found.
+[2025-10-31 22:54:30] Check failed: No subtitles found.
+[2025-10-31 22:55:41] Check failed: No subtitles found.
+[2025-10-31 22:56:54] Check failed: No subtitles found.
+[2025-10-31 22:58:05] Check failed: No subtitles found.
+[2025-10-31 22:59:18] Check failed: No subtitles found.
+[2025-10-31 23:00:31] Check failed: No subtitles found.
+[2025-10-31 23:01:42] Check failed: No subtitles found.
+[2025-10-31 23:02:53] Check failed: No subtitles found.
+[2025-10-31 23:04:04] Check failed: No subtitles found.
+[2025-10-31 23:05:15] Check failed: No subtitles found.
+[2025-10-31 23:06:26] Check failed: No subtitles found.
+[2025-10-31 23:07:37] Check failed: No subtitles found.
