@@ -11,7 +11,7 @@ import threading
 # ======================================================
 # 🔧 CONFIGURATION
 # ======================================================
-VIDEO_URL = "https://youtu.be/FSDw3jX2tvE"  # YouTube video to monitor
+VIDEO_URL = "https://www.youtube.com/watch?v=JdvzWjXWBHc&list=PLJGupZvqQHAs2MoSYfxdgjYIj2MPqMfQ1"  # YouTube video to monitor
 CHECK_INTERVAL = 60  # Check every 1 hour (in seconds)
 LOG_FILE = "subtitle_update_log.txt"
 

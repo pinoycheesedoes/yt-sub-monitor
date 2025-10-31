@@ -1,2 +1,5 @@
 yt-dlp>=2024.7.1
 requests>=2.31.0
+yt-dlp
+requests
+flask
