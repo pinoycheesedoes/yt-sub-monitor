@@ -13,8 +13,7 @@ import threading
 # ======================================================
 VIDEO_URLS = [
     "https://youtu.be/fym9zf86c7Y",
-    "https://youtu.be/EXAMPLE2",
-    "https://youtu.be/EXAMPLE3"
+    "https://youtu.be/pSp7BH9edOI"
 ]
 CHECK_INTERVAL = 60  # seconds between checks
 LOG_FILE = "subtitle_update_log.txt"
@@ -102,7 +101,8 @@ def monitor_subtitles():
             current_hash, title, error = get_manual_subtitle_status(url)
 
             if error:
-                log_event(f"⚠️ [{title}] {error}")  # <-- use title here
+                log_event(f"⚠️ [{title}] {error}")
+                send_telegram(f"⚠️ [{title}] {error}")  # include title in Telegram alert
             elif last_hashes[url] is None:
                 last_hashes[url] = current_hash
                 log_event(f"✅ [{title}] Manual subtitles detected. Monitoring started.")
@@ -115,7 +115,6 @@ def monitor_subtitles():
                 log_event(f"[{title}] No subtitle change detected.")
 
         time.sleep(CHECK_INTERVAL)
-
 
 # ======================================================
 # 🌐 FLASK APP (keeps Render service alive)
