@@ -102,7 +102,7 @@ def monitor_subtitles():
             current_hash, title, error = get_manual_subtitle_status(url)
 
             if error:
-                log_event(f"⚠️ [{url}] {error}")
+                log_event(f"⚠️ [{title}] {error}")  # <-- use title here
             elif last_hashes[url] is None:
                 last_hashes[url] = current_hash
                 log_event(f"✅ [{title}] Manual subtitles detected. Monitoring started.")
@@ -115,6 +115,7 @@ def monitor_subtitles():
                 log_event(f"[{title}] No subtitle change detected.")
 
         time.sleep(CHECK_INTERVAL)
+
 
 # ======================================================
 # 🌐 FLASK APP (keeps Render service alive)
