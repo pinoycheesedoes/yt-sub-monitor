@@ -11,19 +11,17 @@ import threading
 # ======================================================
 # 🔧 CONFIGURATION
 # ======================================================
-VIDEO_URLS = [
-    "https://youtu.be/fym9zf86c7Y",
-    "https://youtu.be/pSp7BH9edOI"
-]
-CHECK_INTERVAL = 60  # seconds between checks
+VIDEO_URLS = ["https://youtu.be/fym9zf86c7Y", "https://youtu.be/pSp7BH9edOI"]
+CHECK_INTERVAL = 300  # seconds between checks
 LOG_FILE = "subtitle_update_log.txt"
 
 # Telegram credentials (secured as environment variables)
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
 
-# Dictionary to track last hashes for each video
-last_hashes = {url: None for url in VIDEO_URLS}
+# Dictionary to track which videos are done
+monitor_done = {url: False for url in VIDEO_URLS}
+
 
 # ======================================================
 # 💬 TELEGRAM FUNCTION
@@ -41,6 +39,7 @@ def send_telegram(message):
         requests.post(url, data=payload, timeout=10)
     except Exception as e:
         print(f"Telegram error: {e}")
+
 
 # ======================================================
 # 🎬 FETCH SUBTITLE STATUS (manual only)
@@ -79,6 +78,7 @@ def get_manual_subtitle_status(video_url):
     except Exception as e:
         return None, None, f"Unexpected error: {str(e)}"
 
+
 # ======================================================
 # 🧾 LOGGING
 # ======================================================
@@ -89,41 +89,59 @@ def log_event(message):
     with open(LOG_FILE, "a", encoding="utf-8") as f:
         f.write(line + "\n")
 
+
 # ======================================================
 # 👀 MONITORING LOOP
 # ======================================================
 def monitor_subtitles():
-    log_event("🚀 Starting manual English subtitle monitor for multiple videos...")
+    log_event(
+        "🚀 Starting manual English subtitle monitor for multiple videos...")
     send_telegram("✅ Manual subtitle monitor started for multiple videos!")
 
     while True:
+        all_done = all(monitor_done.values())
+        if all_done:
+            log_event(
+                "🎉 All videos have manual English subtitles. Monitoring stopped."
+            )
+            send_telegram(
+                "🎉 All videos have manual English subtitles. Monitoring stopped."
+            )
+            break  # Stop monitoring when all videos are done
+
         for url in VIDEO_URLS:
+            # Skip videos already done
+            if monitor_done[url]:
+                continue
+
             current_hash, title, error = get_manual_subtitle_status(url)
 
             if error:
-                log_event(f"⚠️ [{title}] {error}")
-                send_telegram(f"⚠️ [{title}] {error}")  # include title in Telegram alert
-            elif last_hashes[url] is None:
-                last_hashes[url] = current_hash
-                log_event(f"✅ [{title}] Manual subtitles detected. Monitoring started.")
-                send_telegram(f"✅ [{title}] Manual subtitles detected. Monitoring started.")
-            elif current_hash != last_hashes[url]:
-                log_event(f"🔔 [{title}] Subtitle updated!")
-                send_telegram(f"🔔 [{title}] Manually uploaded English subtitles have been updated!")
-                last_hashes[url] = current_hash
+                log_event(f"⚠️ [{title}] {url} — {error}")
+                send_telegram(f"⚠️ [{title}]\n{url}\n{error}")
             else:
-                log_event(f"[{title}] No subtitle change detected.")
+                # Found subtitles — mark done and stop monitoring this video
+                monitor_done[url] = True
+                log_event(
+                    f"✅ [{title}] {url} — Manual subtitles found! Stopping monitoring for this video."
+                )
+                send_telegram(
+                    f"✅ [{title}]\n{url}\nManual subtitles found! Monitoring stopped for this video."
+                )
 
         time.sleep(CHECK_INTERVAL)
+
 
 # ======================================================
 # 🌐 FLASK APP (keeps Render service alive)
 # ======================================================
 app = Flask(__name__)
 
+
 @app.route("/")
 def home():
     return "✅ Manual English Subtitle Monitor is running on Render!"
+
 
 # ======================================================
 # 🚀 MAIN ENTRY POINT
