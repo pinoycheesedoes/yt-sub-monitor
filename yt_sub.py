@@ -12,7 +12,7 @@ import threading
 # 🔧 CONFIGURATION
 # ======================================================
 VIDEO_URLS = ["https://youtu.be/fym9zf86c7Y", "https://youtu.be/pSp7BH9edOI"]
-CHECK_INTERVAL = 300  # seconds between checks
+CHECK_INTERVAL = 900  # seconds between checks
 LOG_FILE = "subtitle_update_log.txt"
 
 # Telegram credentials (secured as environment variables)
@@ -27,16 +27,22 @@ monitor_done = {url: False for url in VIDEO_URLS}
 # 💬 TELEGRAM FUNCTION
 # ======================================================
 def send_telegram(message):
-    """Send a message to your Telegram bot."""
+    """Send a message to your Telegram bot with preserved formatting."""
     if not TELEGRAM_BOT_TOKEN or not TELEGRAM_CHAT_ID:
         print("⚠️ Missing Telegram credentials.")
         return
 
     url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
-    payload = {"chat_id": TELEGRAM_CHAT_ID, "text": message}
+    payload = {
+        "chat_id": TELEGRAM_CHAT_ID,
+        "text": f"<pre>{message}</pre>",
+        "parse_mode": "HTML"
+    }
 
     try:
-        requests.post(url, data=payload, timeout=10)
+        response = requests.post(url, data=payload, timeout=10)
+        if not response.ok:
+            print(f"⚠️ Telegram error: {response.text}")
     except Exception as e:
         print(f"Telegram error: {e}")
 
@@ -90,9 +96,9 @@ def log_event(message):
         f.write(line + "\n")
 
 
-# ======================================================
-# 👀 MONITORING LOOP
-# ======================================================
+        # ======================================================
+        # 👀 MONITORING LOOP
+        # ======================================================
 def monitor_subtitles():
     log_event(
         "🚀 Starting manual English subtitle monitor for multiple videos...")
@@ -107,27 +113,40 @@ def monitor_subtitles():
             send_telegram(
                 "🎉 All videos have manual English subtitles. Monitoring stopped."
             )
-            break  # Stop monitoring when all videos are done
+            break
+
+        summary_lines = []
+        timestamp = datetime.now().strftime("[%Y-%m-%d %H:%M:%S]")
+        summary_lines.append(f"{timestamp} 📋 Summary of current check:")
 
         for url in VIDEO_URLS:
-            # Skip videos already done
             if monitor_done[url]:
+                current_hash, title, _ = get_manual_subtitle_status(url)
+                summary_lines.append(
+                    f"[{title}] {url} - FOUND (Previously Detected)")
                 continue
 
             current_hash, title, error = get_manual_subtitle_status(url)
 
             if error:
+                summary_lines.append(f"[{title}] {url} - NOT_FOUND")
                 log_event(f"⚠️ [{title}] {url} — {error}")
-                send_telegram(f"⚠️ [{title}]\n{url}\n{error}")
             else:
-                # Found subtitles — mark done and stop monitoring this video
                 monitor_done[url] = True
+                summary_lines.append(f"[{title}] {url} - FOUND")
                 log_event(
                     f"✅ [{title}] {url} — Manual subtitles found! Stopping monitoring for this video."
                 )
                 send_telegram(
                     f"✅ [{title}]\n{url}\nManual subtitles found! Monitoring stopped for this video."
                 )
+
+        # 🧾 Combine all results into one summary string
+        summary_output = "\n".join(summary_lines)
+        log_event(summary_output)
+
+        # ✅ Send the exact same formatted summary to Telegram
+        send_telegram(summary_output)
 
         time.sleep(CHECK_INTERVAL)
 
